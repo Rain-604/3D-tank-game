@@ -1,70 +1,79 @@
-#include "Vector.h"
-#include <math.h>
+#ifndef VECTOR_H_
+#define VECTOR_H_
 
-//!
-Vector3f Vector3f::operator-(Vector3f rhs)
-{
-	Vector3f result;
-	result.x = this->x - rhs.x;
-	result.y = this->y - rhs.y;
-	result.z = this->z - rhs.z;
-	return result;
-}
 
-//!
-Vector3f Vector3f::operator+(Vector3f rhs)
-{
-	Vector3f result;
-	result.x = this->x + rhs.x;
-	result.y = this->y + rhs.y;
-	result.z = this->z + rhs.z;
-	return result;
-}
 
-//!
-Vector3f  Vector3f::operator/(float rhs)
+/**
+ * Vector 2 Dimensions floatings
+ */
+class Vector2f
 {
-	Vector3f result;
-	result.x = this->x / rhs;
-	result.y = this->y / rhs;
-	result.z = this->z / rhs;
-	return result;	
-}
 
-//!
-Vector3f  Vector3f::operator*(float rhs)
-{
-	Vector3f result;
-	result.x = this->x * rhs;
-	result.y = this->y * rhs;
-	result.z = this->z * rhs;
-	return result;	
-}
+public:
 
-//!
-float Vector3f::length()
-{
-	return sqrt(x*x + y*y + z*z);
-}
+	//!
+	Vector2f()
+	:x(0),y(0){};
 
-//!
-Vector3f Vector3f::normalise(Vector3f v)
-{
-	return v / v.length();	
-}
+	//!
+	~Vector2f(){};
+	
+	//!
+	Vector2f(float x, float y)
+		:x(x), y(y){};
 
-//! Cross product of two 3D vectors
-Vector3f Vector3f::cross(Vector3f v1, Vector3f v2)
-{
-	Vector3f result;
-	result.x = v1.y * v2.z - v2.y* v1.z;
-	result.y = v1.z * v2.x - v2.z* v1.x;
-	result.z = v1.x * v2.y - v2.x* v1.y;
-	return result;	
-}
+	float x, y; 
+};
 
-//! Dot Product of two 3D vectors
-float Vector3f::dot(Vector3f v1, Vector3f v2)
+
+/**
+ * Vector 3 Dimensions floatings
+ */
+class Vector3f
 {
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
+	
+
+public:
+
+	//!
+	Vector3f()
+	:x(0),y(0),z(0){};
+
+	//!
+	~Vector3f(){};
+	
+	//!
+	Vector3f(float x, float y, float z)
+		:x(x),y(y),z(z){};
+		
+	//!
+	Vector3f operator-(Vector3f rhs);
+	
+	//!
+	Vector3f operator+(Vector3f rhs);
+
+	//! 
+	Vector3f operator/(float rhs);
+
+    //!    
+	Vector3f operator*(float rhs);
+
+	//! get length of vector
+	float length();
+	
+	//! cross product funstion
+	static Vector3f cross(Vector3f v1, Vector3f v2);
+	
+	//! dot product function
+	static float dot(Vector3f v1, Vector3f v2);
+
+	//! Normalise function
+	static Vector3f normalise(Vector3f v);
+
+	//! Values
+	float x,y,z;
+
+};
+
+
+#endif

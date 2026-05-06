@@ -1,83 +1,131 @@
-#ifndef MESH_H_
-#define MESH_H_
+#include "Shader.h"
 
 #include <GL/glew.h>
-#include <GL/gl.h>
-#include <Vector.h>
-#include <iostream>
+#include <stdio.h>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <iostream>
 #include <fstream>
+#include <algorithm>
+#include <stdlib.h>
+#include <string.h>
 
-//! Mesh Class input and rendering
-class Mesh
+
+
+using namespace std;
+
+
+/**
+ * Load shaders from file function
+ */
+GLuint Shader::LoadFromFile(std::string vertexFile, std::string fragmentFile)
 {
+	// Read the Vertex Shader code from the file
+	std::cout << "Loading "  << vertexFile << std::endl;
+	std::string VertexShaderCode;
+	std::ifstream VertexShaderStream(vertexFile.c_str(), std::ios::in);
+	if(VertexShaderStream.is_open()){
+		std::string Line = "";
+		while(getline(VertexShaderStream, Line))
+			VertexShaderCode += "\n" + Line;
+		VertexShaderStream.close();
+	}else{
+		std::cout << "Cannot open "  << vertexFile << "Please check input!" << std::endl;
+		getchar();
+		return 0;
+	}
 
-//
-public:
+	// Read the Fragment Shader code from the file
+	std::cout << "Loading "  << fragmentFile << std::endl;
+	std::string FragmentShaderCode;
+	std::ifstream FragmentShaderStream(fragmentFile.c_str(), std::ios::in);
+	if(FragmentShaderStream.is_open()){
+		std::string Line = "";
+		while(getline(FragmentShaderStream, Line))
+			FragmentShaderCode += "\n" + Line;
+		FragmentShaderStream.close();
+	}else{
+		std::cout << "Cannot open "  << fragmentFile << "Please check input!" << std::endl;
+		getchar();
+		return 0;
+	}
 
-    //! Constructor
-    Mesh() : positionBuffer(0), normalBuffer(0), texcoordBuffer(0){};
+    //Now use compile from src function
+	return Shader::LoadFromSrc(VertexShaderCode, FragmentShaderCode);
+}
 
-    //! Destructor
-    ~Mesh(){};
 
-	//! Load and OBJ mesh from File
-    bool loadOBJ(std::string filename);
+/**
+ * Load shaders from src function
+ */
+GLuint Shader::LoadFromSrc(std::string vertexSrc, std::string fragmentSrc)
+{
+	// Create the shaders
 
-	//! Creates geometry for a cube 
-	void initCube();
-	
-	//! Create geometry for triangle
-	void initTriangle();
+	std::cout << vertexSrc << std::endl;
+	std::cout << fragmentSrc << std::endl;
 
-	//! Create geometry for triangle
-	void initQuad();
-	
-	//!Draw Function for Mesh
-    void Draw(GLuint vertexPositionAttribute, GLuint vertexNormalAttribute = -1, GLuint vertexTexcordAttribute = -1 );
+    //Variables used to check and debug shaders
+	GLint Result = GL_FALSE;
+	int InfoLogLength;
 
-  	//! Returns Mesh Centroid
-	Vector3f getMeshCentroid();
-	
-//!
-private:
+	// Compile Vertex Shader
+	char const * VertexSourcePointer = vertexSrc.c_str();
+	GLuint VertexShaderID   = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
+	glCompileShader(VertexShaderID);
 
-	//! Init
-	void initBuffers();
+	// Check Vertex Shader
+	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if ( InfoLogLength > 0 ){
+		std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
+		glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+		printf("%s\n", &VertexShaderErrorMessage[0]);
+	}
 
-	//Face structure
-	struct Face
-	{
-		std::vector<unsigned int> position_index;
-		std::vector<unsigned int> normal_index;
-		std::vector<unsigned int> texturecoord_index;
-	};
 
-	//! Mesh Positions
-	std::vector<Vector3f> positions;
+	// Compile Fragment Shader
+	char const * FragmentSourcePointer = fragmentSrc.c_str();
+	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
+	glCompileShader(FragmentShaderID);
 
-	//! Mesh Normals
-	std::vector<Vector3f> normals;
+	// Check Fragment Shader
+	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if ( InfoLogLength > 0 ){
+		std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
+		glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+		printf("%s\n", &FragmentShaderErrorMessage[0]);
+	}
 
-	//! Mesh Tex Coords
-	std::vector<Vector2f> texcoords;
-	
-	//! Mesh Faces
-	std::vector<Face> faces;
 
-private:
+	// Link the program
+	printf("Linking program\n");
+	GLuint ProgramID = glCreateProgram();
+	glAttachShader(ProgramID, VertexShaderID);
+	glAttachShader(ProgramID, FragmentShaderID);
+	glLinkProgram(ProgramID);
 
-    //! OpenGL Vertex Positon Buffer
-    GLuint positionBuffer;
- 
-    //! OpenGL Vertex Normal Buffer
-    GLuint normalBuffer;
-     
-    //! OpenGL Vertex Tex Coord Buffer
-    GLuint texcoordBuffer;
 
-};
+	// Check the program
+	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if ( InfoLogLength > 0 ){
+		std::vector<char> ProgramErrorMessage(InfoLogLength+1);
+		glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+		printf("%s\n", &ProgramErrorMessage[0]);
+	}
+	printf("Shader Linked\n");
 
-#endif
+
+    //Clean up Memory
+	glDeleteShader(VertexShaderID);
+	glDeleteShader(FragmentShaderID);
+
+	printf("Shader Program Compiled\n");
+
+    //Return Program ID
+	return ProgramID;
+}
