@@ -1,10 +1,15 @@
 TEMPLATE = app
 
-#Executable Name
+# Executable Name
 TARGET = TankAssignment
-CONFIG = debug
+CONFIG += debug
 
-#Destination
+# Force .exe extension on Windows
+win32 {
+    TARGET = TankAssignment
+}
+
+# Destination
 DESTDIR = ./
 OBJECTS_DIR = ./build/
 
@@ -18,10 +23,16 @@ HEADERS += ../common/Shader.h \
            ../common/map.h \
            ../common/DrawObj.h \
            ../common/DrawPlayer.h \
-           ../common/DrawEnemy.h
+           ../common/DrawEnemy.h \
+           ../common/drawBullet.h \
+           ../common/Coins.h \
+           Game.h \
+           drawBullet.h \
+
 
 # Sources
 SOURCES += main.cpp \
+           Game.cpp \
            ../common/Shader.cpp \
            ../common/Vector.cpp \
            ../common/Matrix.cpp \
@@ -29,11 +40,9 @@ SOURCES += main.cpp \
            ../common/Texture.cpp \
            ../common/SphericalCameraManipulator.cpp
 
-INCLUDEPATH += 	./ 				    \
-		        ../common/ 			\
-
-		
-#Library Libraries
-LIBS +=	-lGLEW			    	    	        \
-		-lglut			        		        \
-        -lGL             	                  	\  
+# Include Paths
+INCLUDEPATH += ./ \
+               ../common/
+        
+# Libraries for Windows/MSYS2
+LIBS += -lglew32 -lfreeglut -lopengl32
