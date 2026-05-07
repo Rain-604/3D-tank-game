@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <utility> // For std::swap
+#include <fstream>
+#include <string>
 
 // Using a struct for clarity instead of a raw int[3]
 struct Vec3 {
@@ -15,10 +17,69 @@ class Map {
 public:
     int grid[40][40];
     std::vector<Vec3> cubePositions;
+    std::vector<Vec3> targetPositions;
 
     Map() {
         // Default level
         loadLevel(4);
+    }
+
+    bool loadFromFile(const std::string& filePath) {
+        std::ifstream file(filePath.c_str());
+        if (!file.is_open()) {
+            return false;
+        }
+
+        std::vector<int> values;
+        int value = 0;
+        while (file >> value) {
+            values.push_back(value);
+        }
+        if (values.size() < 40 * 40) {
+            return false;
+        }
+
+        size_t index = 0;
+        for (int i = 0; i < 40; i++) {
+            for (int j = 0; j < 40; j++) {
+                int cell = values[index++];
+                if (cell != 0 && cell != 1 && cell != 2) {
+                    cell = 0;
+                }
+                grid[i][j] = cell;
+            }
+        }
+
+        generatePositions();
+        return true;
+    }
+
+    bool saveToFile(const std::string& filePath) const {
+        std::ofstream file(filePath.c_str());
+        if (!file.is_open()) {
+            return false;
+        }
+
+        for (int i = 0; i < 40; i++) {
+            for (int j = 0; j < 40; j++) {
+                file << grid[i][j];
+                if (j < 39) {
+                    file << ' ';
+                }
+            }
+            file << '\n';
+        }
+        return true;
+    }
+
+    const std::vector<Vec3>& getTargetPositions() const {
+        return targetPositions;
+    }
+
+    void setTarget(int x, int z) {
+        if (x >= 0 && x < 40 && z >= 0 && z < 40) {
+            grid[x][z] = 2;
+        }
     }
 
     void loadLevel(int level) {
@@ -135,11 +196,15 @@ private:
 
     void generatePositions() {
         cubePositions.clear();
+        targetPositions.clear();
         for (int i = 0; i < 40; i++) {      // Row (X)
             for (int j = 0; j < 40; j++) {  // Col (Z)
-                if (grid[i][j] == 1) {
+                if (grid[i][j] == 1 || grid[i][j] == 2) {
                     // Spacing of 2 units
                     cubePositions.push_back({ i * 2, 0, j * 2 });
+                    if (grid[i][j] == 2) {
+                        targetPositions.push_back({ i, 0, j });
+                    }
                 }
             }
         }
