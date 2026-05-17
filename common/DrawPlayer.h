@@ -23,6 +23,7 @@ public:
 
     // Add a way to spin the turret
     void rotateTurret(float angle) { turretRotation += angle; }
+    void setTurretRotation(float angle) { turretRotation = angle; }
     float getTurretRotation() const { return turretRotation; }
     void spinWheels(float amount) { wheelSpinAngle += amount; }
 

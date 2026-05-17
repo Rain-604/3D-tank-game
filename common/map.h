@@ -157,6 +157,13 @@ public:
                     grid[i][j] = tempGrid[i][j];
                 }
             }
+        } else if (level == 5) {
+            // Level 5: Flat Arena (Survival Challenge)
+            for (int i = 0; i < 40; i++) {
+                for (int j = 0; j < 40; j++) {
+                    grid[i][j] = 1;
+                }
+            }
         }
 
         // Ensure safe spawn zones for Player (bottom-left) and Enemy (top-right)
