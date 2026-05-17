@@ -10,6 +10,7 @@
 #include <Texture.h>
 #include <SphericalCameraManipulator.h>
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <string>
 #include <queue>
@@ -66,6 +67,13 @@ struct Point2D {
     bool operator!=(const Point2D& other) const { return x != other.x || z != other.z; }
 };
 
+struct ScoreEntry {
+    int level;
+    int score;
+    int hp;
+    int timeLeft;
+};
+
 // --- Game Class ---
 class Game {
 public:
@@ -108,7 +116,7 @@ private:
     void rebuildMapPositions();
     
     // Helpers
-    Point2D getNextStepBFS(Point2D start, Point2D goal);
+    Point2D getNextStepAStar(Point2D start, Point2D goal);
     Vector3f getProjectileSpawnPosition(const Vector3f& basePos, float turretRad);
     Vector3f predictProjectileLandingPoint(const Vector3f& spawnPos, float turretRad);
     bool worldToScreen(const Vector3f& worldPos, const Matrix4x4& viewMatrix, const Matrix4x4& projMatrix, int& screenX, int& screenY);
@@ -123,6 +131,9 @@ private:
     void drawGroundShadows(const Matrix4x4& viewMatrix, const Matrix4x4& projMatrix);
     void drawOverlayEllipse(float centerX, float centerY, float radiusX, float radiusY, float red, float green, float blue, float alpha);
     void drawAimPrediction(const Matrix4x4& viewMatrix, const Matrix4x4& projMatrix);
+    void recordScoreIfNeeded();
+    void drawScoreTable(int x, int y);
+    void drawScoreHistory(int x, int y, int maxRows);
 
     // --- Variables ---
     int screenWidth, screenHeight;
@@ -149,6 +160,10 @@ private:
     int previousTimerMs;
     bool previousTimerInitialized;
     int lastTileBreakMs;
+    int currentLevel;
+    bool scoreRecorded;
+    std::vector<ScoreEntry> scoreHistory;
+    int enemydistroy;
 
     int playerLastShootTime;
     float playerVelocity;
